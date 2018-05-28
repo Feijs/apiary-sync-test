@@ -1,0 +1,331 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Notification service for the MyOnlineStore BackOffice",
+    "version": "0.0.1",
+    "title": "Notification Service",
+    "contact": {
+      "name": "MyOnlineStore",
+      "url": "http://www.mijnwebwinkel.nl/support"
+    }
+  },
+  "host": "notifications.myonlinestore.com",
+  "basePath": "/api/",
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/deliver/{storeId}": {
+      "post": {
+        "tags": [
+          "BackOffice Notifications"
+        ],
+        "summary": "Deliver a notification to a merchant",
+        "operationId": "deliver",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "storeId",
+            "in": "path",
+            "description": "ID of merchant to add deliver the notification to",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Notification specification",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/NotificationDelivery"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Invalid input or unknown type"
+          }
+        },
+        "security": [
+          {
+            "internal-token": []
+          }
+        ]
+      }
+    },
+    "/list/{locale}": {
+      "get": {
+        "tags": [
+          "BackOffice Notifications"
+        ],
+        "summary": "List localized notifications for a merchant",
+        "operationId": "list",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "path",
+            "description": "Language to return notifications in",
+            "type": "string",
+            "required": true,
+            "pattern": "^[a-z]{2}_[A-Z]{2}$"
+          },
+          {
+            "name": "is_read",
+            "in": "query",
+            "description": "Whether notifications should have been read",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of notifications to return",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "max_created_at",
+            "in": "query",
+            "description": "Maximum notification createdAt date",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "max_priority",
+            "in": "query",
+            "description": "Maximum notification priority",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "lowest",
+              "low",
+              "normal",
+              "high",
+              "urgent"
+            ]
+          },
+          {
+            "name": "min_created_at",
+            "in": "query",
+            "description": "Minimum notification createdAt date",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "min_priority",
+            "in": "query",
+            "description": "Minimum notification priority",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "lowest",
+              "low",
+              "normal",
+              "high",
+              "urgent"
+            ]
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Offset to start fetching notifications",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Set of notifications",
+            "schema": {
+              "$ref": "#/definitions/Notification"
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/mark-read": {
+      "patch": {
+        "tags": [
+          "BackOffice Notifications"
+        ],
+        "summary": "Mark one or more notifications as read",
+        "operationId": "markRead",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Set of notification ids",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    }
+  },
+  "securityDefinitions": {
+    "session": {
+      "type": "oauth2",
+      "authorizationUrl": "http://petstore.swagger.io/oauth/dialog",
+      "flow": "implicit",
+      "scopes": {
+        "write:pets": "modify pets in your account",
+        "read:pets": "read your pets"
+      }
+    },
+    "internal-token": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    }
+  },
+  "definitions": {
+    "Notification": {
+      "type": "object",
+      "required": [
+        "type",
+        "id",
+        "priority",
+        "severity",
+        "created_at",
+        "isPersistent",
+        "payload"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "example": "b06f5702-9070-4140-b2c5-047f0a38d86c"
+        },
+        "type": {
+          "type": "string",
+          "example": "orders.new_since_last_login"
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "lowest",
+            "low",
+            "normal",
+            "high",
+            "urgent"
+          ],
+          "example": "normal"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "error",
+            "info",
+            "success",
+            "warning"
+          ],
+          "example": "info"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp",
+          "example": 1527491534
+        },
+        "read_at": {
+          "type": "string",
+          "format": "timestamp",
+          "example": 1527491534
+        },
+        "isPersistent": {
+          "type": "boolean",
+          "example": false
+        },
+        "payload": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PayloadItem"
+          }
+        }
+      }
+    },
+    "NotificationDelivery": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "example": "b06f5702-9070-4140-b2c5-047f0a38d86c"
+        },
+        "type": {
+          "type": "string",
+          "example": "orders.new_since_last_login"
+        },
+        "payload": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PayloadItem"
+          }
+        }
+      }
+    },
+    "PayloadItem": {
+      "type": "object",
+      "required": [
+        "key",
+        "locale",
+        "value"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "example": "title"
+        },
+        "locale": {
+          "type": "string",
+          "pattern": "^[a-z]{2}_[A-Z]{2}$",
+          "example": "en_GB"
+        },
+        "value": {
+          "type": "string",
+          "example": "Here I am!"
+        }
+      }
+    }
+  }
+}

@@ -136,15 +136,10 @@ paths:
       - session: []         
 securityDefinitions:
   session:
-    type: "oauth2"
-    authorizationUrl: "http://petstore.swagger.io/oauth/dialog"
-    flow: "implicit"
-    scopes:
-      write:pets: "modify pets in your account"
-      read:pets: "read your pets"
+    type: "basic"
   internal-token:
     type: "apiKey"
-    name: "api_key"
+    name: "X-API-HEADER"
     in: "header"
 definitions:
   Notification:
